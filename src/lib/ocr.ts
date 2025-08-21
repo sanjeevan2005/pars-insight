@@ -62,7 +62,7 @@ export class OCRService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_MISTRAL_API_KEY}`,
+          'Authorization': `Bearer j66SfH2oOktBrjSCub0LsZfMuoAVDa6R`,
         },
         body: JSON.stringify({
           model: 'mistral-small',
