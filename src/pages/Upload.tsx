@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { Upload as UploadIcon, File, X, CheckCircle, AlertTriangle, Package } from "lucide-react";
+import { ocrService, type ExtractedData } from "@/lib/ocr";
 import Layout from "@/components/layout/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,14 +14,7 @@ interface UploadFile {
   file: File;
   status: 'pending' | 'processing' | 'success' | 'error';
   progress: number;
-  extractionResult?: {
-    documentType: string;
-    isShippingLabel: boolean;
-    trackingNumber?: string;
-    originAddress?: any;
-    destinationAddress?: any;
-    message?: string;
-  };
+  extractionResult?: ExtractedData;
 }
 
 const Upload = () => {
@@ -84,52 +78,55 @@ const Upload = () => {
       const file = files[i];
       if (file.status !== 'pending') continue;
 
-      // Update status to processing
-      setFiles(prev => prev.map(f => 
-        f.id === file.id ? { ...f, status: 'processing', progress: 0 } : f
-      ));
-
-      // Simulate OCR + AI processing with progress updates
-      for (let progress = 0; progress <= 100; progress += 10) {
-        await new Promise(resolve => setTimeout(resolve, 200));
+      try {
+        // Update status to processing
         setFiles(prev => prev.map(f => 
-          f.id === file.id ? { ...f, progress } : f
+          f.id === file.id ? { ...f, status: 'processing', progress: 10 } : f
+        ));
+
+        // Initialize OCR worker
+        await ocrService.initializeWorker();
+        
+        setFiles(prev => prev.map(f => 
+          f.id === file.id ? { ...f, progress: 30 } : f
+        ));
+
+        // Extract text using Tesseract OCR
+        const ocrResult = await ocrService.extractText(file.file);
+        
+        setFiles(prev => prev.map(f => 
+          f.id === file.id ? { ...f, progress: 60 } : f
+        ));
+
+        // Process with AI for structured data
+        const extractionResult = await ocrService.processWithAI(ocrResult.text);
+        
+        setFiles(prev => prev.map(f => 
+          f.id === file.id ? { ...f, progress: 90 } : f
+        ));
+
+        // Update with final results
+        setFiles(prev => prev.map(f => 
+          f.id === file.id ? { 
+            ...f, 
+            status: 'success',
+            progress: 100,
+            extractionResult
+          } : f
+        ));
+
+      } catch (error) {
+        console.error('Processing error:', error);
+        
+        // Update with error status
+        setFiles(prev => prev.map(f => 
+          f.id === file.id ? { 
+            ...f, 
+            status: 'error',
+            progress: 100
+          } : f
         ));
       }
-
-      // Simulate extraction results
-      const mockResult = {
-        documentType: Math.random() > 0.3 ? 'SHIPPING_LABEL' : 'OTHER',
-        isShippingLabel: Math.random() > 0.3,
-        trackingNumber: Math.random() > 0.3 ? `1Z999AA${Math.floor(Math.random() * 1000000000)}` : undefined,
-        originAddress: {
-          name: "John Smith",
-          street: "123 Main St",
-          city: "New York",
-          state: "NY",
-          zip: "10001",
-          country: "US"
-        },
-        destinationAddress: {
-          name: "Jane Doe", 
-          street: "456 Oak Ave",
-          city: "Los Angeles",
-          state: "CA", 
-          zip: "90210",
-          country: "US"
-        },
-        message: Math.random() > 0.7 ? "Document is not a shipping label" : "N/A"
-      };
-
-      // Update with final results
-      setFiles(prev => prev.map(f => 
-        f.id === file.id ? { 
-          ...f, 
-          status: Math.random() > 0.1 ? 'success' : 'error',
-          progress: 100,
-          extractionResult: mockResult
-        } : f
-      ));
     }
 
     setIsProcessing(false);
