@@ -14,7 +14,99 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      documents: {
+        Row: {
+          created_at: string
+          destination_address: Json | null
+          document_type: string | null
+          extracted_text: string | null
+          file_size: number | null
+          file_type: string | null
+          filename: string
+          id: string
+          is_shipping_label: boolean | null
+          ocr_confidence: number | null
+          origin_address: Json | null
+          processing_message: string | null
+          processing_status: string
+          tracking_number: string | null
+          updated_at: string
+          upload_date: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          destination_address?: Json | null
+          document_type?: string | null
+          extracted_text?: string | null
+          file_size?: number | null
+          file_type?: string | null
+          filename: string
+          id?: string
+          is_shipping_label?: boolean | null
+          ocr_confidence?: number | null
+          origin_address?: Json | null
+          processing_message?: string | null
+          processing_status?: string
+          tracking_number?: string | null
+          updated_at?: string
+          upload_date?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          destination_address?: Json | null
+          document_type?: string | null
+          extracted_text?: string | null
+          file_size?: number | null
+          file_type?: string | null
+          filename?: string
+          id?: string
+          is_shipping_label?: boolean | null
+          ocr_confidence?: number | null
+          origin_address?: Json | null
+          processing_message?: string | null
+          processing_status?: string
+          tracking_number?: string | null
+          updated_at?: string
+          upload_date?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+          role: string
+          status: string
+          updated_at: string
+          user_id: string
+          username: string | null
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          role?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+          username?: string | null
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          role?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
