@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Package, Lock, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,14 +7,19 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useAuth } from "@/hooks/useAuth";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { signUp, signIn, user } = useAuth();
+  const navigate = useNavigate();
+
   const [loginData, setLoginData] = useState({
     email: "",
     password: ""
   });
+  
   const [registerData, setRegisterData] = useState({
     username: "",
     email: "",
@@ -22,24 +27,48 @@ const Login = () => {
     confirmPassword: ""
   });
 
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      // Redirect to dashboard
-      window.location.href = "/dashboard";
-    }, 2000);
+
+    const { error } = await signIn(loginData.email, loginData.password);
+    
+    if (!error) {
+      navigate('/dashboard');
+    }
+    
+    setIsLoading(false);
   };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (registerData.password !== registerData.confirmPassword) {
+      return;
+    }
+
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
+
+    const { error } = await signUp(registerData.email, registerData.password, registerData.username);
+    
+    if (!error) {
+      // Clear form
+      setRegisterData({
+        username: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      });
+    }
+    
+    setIsLoading(false);
   };
 
   return (
